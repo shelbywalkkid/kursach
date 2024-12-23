@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все Туториалы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .tutorial-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .tutorial-list li {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1>Все Туториалы</h1>
+
+<!-- Отображаем список туториалов -->
+<ul class="tutorial-list">
+    <th:block th:if="${tutorials != null and tutorials.size() > 0}">
+        <th:block th:each="tutorial : ${tutorials}">
+            <li>
+                <h2 th:text="${tutorial.title}"></h2>
+                <p th:text="${#strings.length(tutorial.content) > 100 ? #strings.substring(tutorial.content, 0, 100) + '...' : tutorial.content}"></p>
+                <p><strong>Рейтинг:</strong>
+                    <span th:text="${tutorial.averageRating != null ? tutorial.averageRating : 'Нет оценок'}"></span>
+                </p>
+                <a th:href="@{/tutorials/{id}(id=${tutorial.id})}">Подробнее</a>
+            </li>
+        </th:block>
+    </th:block>
+
+    <!-- Если нет доступных туториалов -->
+    <th:block th:if="${tutorials == null or tutorials.size() == 0}">
+        <p>Нет доступных туториалов</p>
+    </th:block>
+</ul>
+
+</body>
+</html>
