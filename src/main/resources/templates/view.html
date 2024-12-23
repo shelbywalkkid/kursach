@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Туториал</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .main-content {
+      width: 70%;
+    }
+    .sidebar {
+      width: 28%;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+    }
+    .tutorial-content {
+      margin-bottom: 20px;
+    }
+    .comments {
+      margin-top: 30px;
+    }
+    .comment {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .stars {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .star {
+      font-size: 30px;
+      cursor: pointer;
+      color: #d3d3d3;
+      transition: color 0.3s;
+    }
+    .star.selected {
+      color: gold;
+    }
+    .star:hover {
+      color: #ffcc00;
+    }
+    .random-tutorials {
+      margin-top: 20px;
+    }
+    .random-tutorials ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    .random-tutorials li {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="main-content">
+  <h1 th:text="${tutorial.title}"></h1>
+  <div class="tutorial-content">
+    <p th:text="${tutorial.content}"></p>
+  </div>
+
+  <a href="/tutorials" class="back-button">Вернуться к списку</a>
+
+  <div>
+    <p><strong>Автор:</strong> <span th:text="${tutorial.author.fname} + ' ' + ${tutorial.author.sname}"></span></p>
+  </div>
+
+  <!-- Рейтинг с кнопками-звездами -->
+  <div>
+    <h3>Рейтинг: <span id="ratingValue" th:text="${tutorial.rating}"></span></h3>
+    <div class="stars">
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
+    </div>
+    <form action="#" th:action="@{/tutorials/{id}/rate(id=${tutorial.id})}" method="post" id="rateForm" style="display: none;">
+      <input type="hidden" id="ratingInput" name="rating" />
+      <button type="submit">Оценить</button>
+    </form>
+  </div>
+
+  <!-- Изображения -->
+  <div>
+    <h3>Изображения:</h3>
+    <ul>
+      <li th:each="image : ${tutorial.images}">
+        <img th:src="${image}" alt="image" width="300"/>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Видео -->
+  <div>
+    <h3>Видео:</h3>
+    <ul>
+      <li th:each="video : ${tutorial.videos}">
+        <iframe th:src="'https://www.youtube.com/embed/' + ${#strings.substringAfter(video, 'v=')}"
+                width="560" height="315" frameborder="0" allowfullscreen></iframe>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Комментарии -->
+  <div class="comments">
+    <h3>Комментарии:</h3>
+    <div th:each="comment : ${tutorial.comments}" class="comment">
+      <p><strong th:text="${comment.userId}"></strong>: <span th:text="${comment.text}"></span></p>
+    </div>
+
+    <h4>Добавить комментарий:</h4>
+    <form action="#" th:action="@{/tutorials/{id}/comment(id=${tutorial.id})}" method="post">
+      <label for="userId">Ваш ID:</label>
+      <input type="text" id="userId" name="userId" required>
+      <br>
+      <label for="commentText">Комментарий:</label>
+      <textarea id="commentText" name="text" required></textarea>
+      <br>
+      <button type="submit">Отправить комментарий</button>
+    </form>
+  </div>
+</div>
+
+<!-- Боковая панель с случайными туториалами -->
+<div class="sidebar">
+  <h3>Случайные Туториалы</h3>
+  <div class="random-tutorials">
+    <ul>
+      <th:block th:each="tutorial : ${randomTutorials}">
+        <li>
+          <h4 th:text="${tutorial.title}"></h4>
+          <a th:href="@{/tutorials/{id}(id=${tutorial.id})}">Подробнее</a>
+        </li>
+      </th:block>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const stars = document.querySelectorAll('.star');
+  const ratingInput = document.getElementById('ratingInput');
+  const ratingValue = document.getElementById('ratingValue');
+  let currentRating = parseFloat(ratingValue.textContent);
+
+  function updateStars(rating) {
+    stars.forEach(star => {
+      const value = parseInt(star.getAttribute('data-value'));
+      if (value <= rating) {
+        star.classList.add('selected');
+      } else {
+        star.classList.remove('selected');
+      }
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      currentRating = parseInt(star.getAttribute('data-value'));
+      ratingValue.textContent = currentRating;
+      updateStars(currentRating);
+      ratingInput.value = currentRating;
+      document.getElementById('rateForm').submit();
+    });
+  });
+
+  updateStars(currentRating);
+</script>
+
+</body>
+</html>

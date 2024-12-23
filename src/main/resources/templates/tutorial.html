@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Туториал</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1d1d1d;
+            color: #ffffff;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .main-content {
+            background-color: #2a2a2a;
+            padding: 20px;
+            width: 70%;
+            border-radius: 10px;
+        }
+
+        .main-content h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .main-content p {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .comments input[type="text"] {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            color: black;
+        }
+
+        .comments input[type="submit"] {
+            background-color: #bfff00;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .comments input[type="submit"]:hover {
+            background-color: #a9e600;
+        }
+
+        .sidebar {
+            width: 25%;
+        }
+
+        .sidebar .tutorial-card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar .tutorial-card button {
+            background-color: #bfff00;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .sidebar .tutorial-card button:hover {
+            background-color: #a9e600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Основной контент -->
+
+    <div class="main-content">
+        <h1 th:text="${tutorial.title}">Название</h1>
+        <p th:text="${tutorial.description}">ОписаниеОписаниеОписание...</p>
+        <p><strong>Изображение:</strong></p>
+        <img th:src="${tutorial.imageUrl}" alt="image" width="300"/>
+
+        <!-- Видео -->
+        <p><strong>Видео:</strong></p>
+        <div>
+            <iframe
+                    th:src="'https://www.youtube.com/embed/' + ${tutorial.content?.split('=')[1]}"
+                    width="560"
+                    height="315"
+                    frameborder="0"
+                    allowfullscreen>
+            </iframe>
+        </div>
+
+        <div id="comments-section">
+            <h3>Комментарии</h3>
+            <ul id="comments-list">
+                <table>
+                    <tr th:each="comment : ${tutorial.comments}">
+                        <td th:text="${comment.user.username}">Username</td>
+                        <td th:text="${comment.content}">Comment Content</td>
+                        <td th:text="${#temporals.format(comment.createdAt, 'dd.MM.yyyy')}">Date Created</td>
+                    </tr>
+                </table>
+
+            </ul>
+            <form action="#" th:action="@{/tutorials/{id}/comments(id=${tutorial.id})}" th:object="${comment}" method="post">
+                <input type="hidden" th:attr="name='tutorial_id', value=${tutorial.id}" />
+                <input type="hidden" th:attr="name='user', value=1" />
+                <input type="hidden" th:attr="name='username', value='dsdasda'" />
+                <p>Message: <input type="text" th:attr="name='content'" /></p>
+                <p>
+                    <input type="submit" value="Submit" />
+                    <input type="reset" value="Reset" />
+                </p>
+            </form>
+        </div>
+
+        <script>
+            document.getElementById('comment-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const tutorialId = /* Получите ID туториала */;
+                const commentContent = document.getElementById('comment-content').value;
+
+                fetch(`/tutorials/${tutorialId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content: commentContent })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const commentsList = document.getElementById('comments-list');
+                        const commentItem = document.createElement('li');
+                        commentItem.textContent = `${data.username} (${data.createdAt}): ${data.content}`;
+                        commentsList.appendChild(commentItem);
+                        document.getElementById('comment-content').value = ''; // Очистить поле
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+            // Загрузка комментариев при загрузке страницы
+            window.addEventListener('load', function () {
+                const tutorialId = /* Получите ID туториала */;
+
+                fetch(`/tutorials/${tutorialId}/comments`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const commentsList = document.getElementById('comments-list');
+                        data.forEach(comment => {
+                            const commentItem = document.createElement('li');
+                            commentItem.textContent = `${comment.username} (${comment.createdAt}): ${comment.content}`;
+                            commentsList.appendChild(commentItem);
+                        });
+                    });
+            });
+        </script>
+
+        <!-- Боковая панель -->
+    <div class="sidebar">
+        <div class="tutorial-card">
+            <p>Другой туториал. Описание туториала.</p>
+            <button>Читать</button>
+        </div>
+        <div class="tutorial-card">
+            <p>Другой туториал. Описание туториала.</p>
+            <button>Читать</button>
+        </div>
+        <div class="tutorial-card">
+            <p>Другой туториал. Описание туториала.</p>
+            <button>Читать</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
